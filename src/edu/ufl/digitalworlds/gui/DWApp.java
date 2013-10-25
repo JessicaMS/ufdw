@@ -12,6 +12,33 @@ import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+/*
+ * Copyright 2011, Digital Worlds Institute, University of 
+ * Florida, Angelos Barmpoutis.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *     * Redistributions of source code must retain this copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce this
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 @SuppressWarnings("serial")
 public abstract class DWApp extends JPanel implements ItemListener, ActionListener
@@ -68,16 +95,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
     static JProgressBar progressBar;
     static JLabel progressLabel;
 
-    /*    static JTabbedPane tabbedPane;
-    
-    
-    static JCheckBoxMenuItem verboseCB;
-    static JCheckBoxMenuItem ccthreadCB;
-    static JCheckBoxMenuItem printCB = new JCheckBoxMenuItem("Default Printer");
-    static Color backgroundColor;
-    static JCheckBoxMenuItem memoryCB, perfCB;*/
-
-
     public void setLoadingProgress(String msg,int value)
     {
     	progressLabel.setText(msg);
@@ -120,9 +137,8 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
     	JOptionPane.showMessageDialog(parent, question, title, JOptionPane.INFORMATION_MESSAGE);
     }
     
-    public void destructor(){// You can still stop closing if you want to
+    public void destructor(){
         if ( showConfirmDialog("Closing application","Are you sure you want to exit?")) {
-            // dispose method issues the WINDOW_CLOSED event
             app_frame.dispose();
             GUIclosing();
             System.exit(0);
@@ -319,9 +335,7 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
         system_properties = (JMenuItem) system_options.add(new JMenuItem("System info"));
         system_properties.addActionListener(this);
     
-        
-        //options = (JMenu) menuBar.add(new JMenu("About"));
-        //aboutDW = (JMenuItem) options.add(new JMenuItem("Digital Worlds"));
+
         aboutDW = (JMenuItem) menuBar.add(new JMenuItem("About"));
         aboutDW.addActionListener(this);
         Dimension d=new Dimension();
@@ -359,14 +373,13 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
         }
         else if(e.getSource().equals(setLocationMI) || e.getSource().equals(setlocation_Button))
         {
-        	SetLocationDialog a=new SetLocationDialog();
+        	new SetLocationDialog();
         }
         else if(e.getSource().equals(setSizeMI) || e.getSource().equals(setsize_Button))
         {
-        	SetSizeDialog a=new SetSizeDialog();
+        	new SetSizeDialog();
         }
         else if (e.getSource().equals(detachWindowMI) || e.getSource().equals(detach_Button)) {
-        	//System.out.println("ok");
         	
         	if(detachWindowMI.getText().compareTo("Detach window")==0)
         	{
@@ -404,7 +417,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
                 };
                 frame.addWindowListener(adapter);
                 frame.addWindowStateListener(adapter);
-                //JOptionPane.setRootFrame(frame);
                 frame.getContentPane().add("Center",DWApp.app);
                 frame.pack();
                 
@@ -439,7 +451,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
         else if (e.getSource().equals(hideBorderMI) || e.getSource().equals(hideborder_Button)) {
         	
         	app_frame.getContentPane().removeAll();
-        	//app_frame.setVisible(false);
         	Point loc=app_frame.getLocation();
         	Dimension siz=app_frame.getSize();
         	app_frame.dispose();
@@ -476,7 +487,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
             };
             frame.addWindowListener(adapter);
             frame.addWindowStateListener(adapter);
-            //JOptionPane.setRootFrame(frame);
             frame.getContentPane().add("Center",DWApp.app);
             frame.pack();
             
@@ -492,7 +502,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
         else if (e.getSource().equals(toggleFullScreenMI) || e.getSource().equals(fullscreen_Button))
         {
         	app_frame.getContentPane().removeAll();
-        	//app_frame.setVisible(false);
         	Point loc=app_frame.getLocation();
         	Dimension siz=app_frame.getSize();
         	app_frame.dispose();
@@ -533,7 +542,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
             };
             frame.addWindowListener(adapter);
             frame.addWindowStateListener(adapter);
-            //JOptionPane.setRootFrame(frame);
             frame.getContentPane().add("Center",DWApp.app);
             frame.pack();
             
@@ -596,22 +604,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
 
     public void stop() {GUIclosing();System.exit(0);}
 
-
-    /*static void addToGridBag(JPanel panel, Component comp,
-            int x, int y, int w, int h, double weightx, double weighty) {
-
-        GridBagLayout gbl = (GridBagLayout) panel.getLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
-        c.gridx = x;
-        c.gridy = y;
-        c.gridwidth = w;
-        c.gridheight = h;
-        c.weightx = weightx;
-        c.weighty = weighty;
-        panel.add(comp);
-        gbl.setConstraints(comp, c);
-    }*/
     
     public static String FormatDecimal(String in,int decimals)
     {
@@ -1074,15 +1066,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
 	     DWApp.addToGridBag(p_, tmp, 0, 1, 1, 1, 1.0, 1.0);
 	     
    	     
-   	        
-   	     /*button_ok=new JButton("Ok");
-   	     button_ok.addActionListener(new ActionListener(){
-   			public void actionPerformed(ActionEvent arg0) {
-   				//mK.saveParams();	
-   			}
-   	     });
-    	 DWApp.addToGridBag(p_, button_ok, 0, 2, 1, 1, 1.0, 1.0);*/
-   	     
     	 p_root.add(p_,BorderLayout.CENTER);
    	     
    	     add(p_root,BorderLayout.CENTER);
@@ -1144,15 +1127,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
    	     tmp.add(text_Y,BorderLayout.CENTER);
 	     DWApp.addToGridBag(p_, tmp, 0, 1, 1, 1, 1.0, 1.0);
 	     
-   	     
-   	        
-   	     /*button_ok=new JButton("Ok");
-   	     button_ok.addActionListener(new ActionListener(){
-   			public void actionPerformed(ActionEvent arg0) {
-   				//mK.saveParams();	
-   			}
-   	     });
-    	 DWApp.addToGridBag(p_, button_ok, 0, 2, 1, 1, 1.0, 1.0);*/
    	     
     	 p_root.add(p_,BorderLayout.CENTER);
    	     
