@@ -15,7 +15,7 @@ import javax.media.opengl.GL2;
 import edu.ufl.digitalworlds.math.Geom;
 
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -51,10 +51,10 @@ import edu.ufl.digitalworlds.math.Geom;
 
 public class DepthMap
 {
-	private int Dwidth;public int getWidth(){return Dwidth;}
-	private int Dheight;public int getHeight(){return Dheight;}
-	private int Dwidth2;
-	private int Dheight2;
+	protected int Dwidth;public int getWidth(){return Dwidth;}
+	protected int Dheight;public int getHeight(){return Dheight;}
+	protected int Dwidth2;
+	protected int Dheight2;
 
 	public double transformation[];
 
@@ -74,11 +74,13 @@ public class DepthMap
 	private float center[]=null;
 	private boolean recompute_center=false;
 
-	private float largest_z_diff=0.05f;//5 centimeters
-	public void setMaximumAllowedDeltaZ(float dz){largest_z_diff=dz;}
+	protected float largest_z_diff=0.05f;//5 centimeters
+	public void setMaximumAllowedDeltaZ(double dz){largest_z_diff=(float)dz;}
 	public float getMaximumAllowedDeltaZ(){return largest_z_diff;}
 	
 	public static float FLT_EPSILON=1.192092896e-07f; 
+	
+	private float focLen=J4K1.NUI_CAMERA_DEPTH_NOMINAL_FOCAL_LENGTH_IN_PIXELS;
 	
 	public DepthMap(int w,int h)
 	{
@@ -93,32 +95,179 @@ public class DepthMap
 		transformation=Geom.identity4();
 	}
 	
-	public DepthMap(int w,int h,ShortBuffer sb)
+	public DepthMap(int w, int h,float[] xyz)
 	{
 		Dwidth=w;
 		Dheight=h;
-		Dwidth2=w/2;
-		Dheight2=h/2;
+		Dwidth2=Dwidth/2;
+		Dheight2=Dheight/2;
+		int sz=Dwidth*Dheight;
+		realZ=new float[sz];
+		realX=new float[sz];
+		realY=new float[sz];
+		int idx=0;
+		int c1=0;
+		int c2=0;
+		for(int i=0;i<sz;i++)
+		{
+			if(xyz[idx+2]==Float.NEGATIVE_INFINITY)
+			{
+				idx+=3;
+				c1++;
+			}
+			else
+			{
+				realX[i]=-xyz[idx];idx++;
+				realY[i]=xyz[idx];idx++;
+				realZ[i]=xyz[idx];idx++;
+				c2++;
+			}
+		}
+		player=new byte[sz];
+		recompute_center=false;
+		transformation=Geom.identity4();
+	}
+		
+	public void setPlayerIndex(short[] packed_data, byte[] index)
+	{
+		if(index!=null)
+		{
+			if(index.length!=realZ.length) return;
+			player=index;
+		}
+		else
+		{
+			if(packed_data.length!=realZ.length)return;
+			int sz=Dwidth*Dheight;
+			short sv;
+			int iv;
+			for(int i=0;i<sz;i++)
+			{
+				sv=packed_data[i];
+				iv=sv >= 0 ? sv : 0x10000 + sv; 
+				player[i]= (byte)((iv&7)-1);
+			}
+		}
+	}
+	/*public DepthMap(ShortBuffer sb, J4K1 kinect)
+	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),true);
+	}
+	
+	public DepthMap(ShortBuffer sb, J4K2 kinect)
+	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),false);
+	}
+	
+	public DepthMap(ShortBuffer sb, J4KSDK kinect)
+	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),kinect.getDeviceType()==J4KSDK.MICROSOFT_KINECT_1);
+	}
+	
+	public DepthMap(ShortBuffer sb, int w, int h, float focLen,boolean shift)
+	{
+		Dwidth=w;
+		Dheight=h;
+		this.focLen=focLen;
+		Dwidth2=Dwidth/2;
+		Dheight2=Dheight/2;
 		mask_width=Dwidth;
 		mask_height=Dheight;
 		short sv;
 		int iv;
-		int sz=w*h;
+		int sz=Dwidth*Dheight;
 		realZ=new float[sz];
 		player=new byte[sz];
-		for(int i=0;i<sz;i++)
-		{
-			sv=sb.get(i);
-			iv=sv >= 0 ? sv : 0x10000 + sv; 
-			realZ[i]=( (iv & 0xfff8)>>3)/1000.0f;
-			player[i]= (byte)(iv&7);
-		}
+		if(shift)
+			for(int i=0;i<sz;i++)
+			{
+				sv=sb.get(i);
+				iv=sv >= 0 ? sv : 0x10000 + sv; 
+				realZ[i]=( (iv & 0xfff8)>>3)/1000.0f;
+				player[i]= (byte)(iv&7);
+			}
+		else
+			for(int i=0;i<sz;i++)
+			{
+				sv=sb.get(i);
+				iv=sv >= 0 ? sv : 0x10000 + sv; 
+				realZ[i]=iv/1000.0f;
+				//player[i]= (byte)(iv&7);
+			}
 		recompute_center=true;
 		transformation=Geom.identity4();
 	}
 	
-	public DepthMap(int w,int h,short sb[])
+	public DepthMap(short sb[],J4KSDK kinect)
 	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),kinect.getDeviceType()==J4KSDK.MICROSOFT_KINECT_1);
+	}
+	
+	public DepthMap(short sb[],J4K1 kinect)
+	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),true);
+	}
+	
+	public DepthMap(short sb[],J4K2 kinect)
+	{
+		this(sb,kinect.getDepthWidth(),kinect.getDepthHeight(),kinect.getFocalLengthX(),false);
+	}
+	
+	public DepthMap(short sb[],int w, int h, float focLen,boolean shift)
+	{
+		Dwidth=w;
+		Dheight=h;
+		this.focLen=focLen;
+		Dwidth2=Dwidth/2;
+		Dheight2=Dheight/2;
+		mask_width=Dwidth;
+		mask_height=Dheight;
+		short sv;
+		int iv;
+		int sz=Dwidth*Dheight;
+		realZ=new float[sz];
+		player=new byte[sz];
+		if(shift)
+			for(int i=0;i<sz;i++)
+			{
+				sv=sb[i];
+				iv=sv >= 0 ? sv : 0x10000 + sv; 
+				realZ[i]=( (iv & 0xfff8)>>3)/1000.0f;
+				player[i]= (byte)(iv&7);
+			}
+		else
+			for(int i=0;i<sz;i++)
+			{
+				sv=sb[i];
+				iv=sv >= 0 ? sv : 0x10000 + sv; 
+				realZ[i]=iv/1000.0f;
+				//player[i]= (byte)(iv&7);
+			}
+		recompute_center=true;
+		transformation=Geom.identity4();
+	}
+	
+	public DepthMap(short sb[])
+	{
+		int w=0;
+		int h=0;
+		if(sb.length==320*240)
+		{
+			w=320;
+			h=240;
+		}
+		else if(sb.length==640*480)
+		{
+			w=640;
+			h=480;
+		}
+		else if(sb.length==80*60)
+		{
+			w=80;
+			h=60;
+		}
+
+		
 		Dwidth=w;
 		Dheight=h;
 		Dwidth2=w/2;
@@ -139,7 +288,7 @@ public class DepthMap
 		}
 		recompute_center=true;
 		transformation=Geom.identity4();
-	}
+	}*/
 	
 	public void maskZ(float threshold)
 	{
@@ -162,19 +311,70 @@ public class DepthMap
 				mask[j*Dwidth+i]=true;
 	}
 	
+	public void smooth()
+	{
+		smooth(1);
+	}
+	
+	public void smooth(int times)
+	{
+		if(times<1) return;
+		
+		for(int i=0;i<times;i++)
+			smoothZ();
+		
+		//if(realX!=null && realY!=null)
+		//	computeXY();
+	}
+	
+	private void smoothZ()
+	{
+		final int w=getWidth();
+		final int h=getHeight();
+		float z[]=new float[h*w];
+		int idx;
+		
+		for(int i=1;i<w-1;i++)
+		{
+			for(int j=1;j<h-1;j++)
+			{
+				idx=j*w+i;
+				if(realZ[idx]>=FLT_EPSILON)
+				{
+					z[idx]+=realZ[idx]*0.5f; 
+					float total_weight=0.5f;
+					if(realZ[idx-1]>=FLT_EPSILON)
+					{	z[idx]+=realZ[idx-1]*0.125f; total_weight+=0.125f;}
+					if(realZ[idx+1]>=FLT_EPSILON)
+					{	z[idx]+=realZ[idx+1]*0.125f; total_weight+=0.125f;}
+					if(realZ[idx-w]>=FLT_EPSILON)
+					{	z[idx]+=realZ[idx-w]*0.125f; total_weight+=0.125f;}
+					if(realZ[idx+w]>=FLT_EPSILON)
+					{	z[idx]+=realZ[idx+w]*0.125f; total_weight+=0.125f;}
+					if(total_weight>0)
+						z[idx]/=total_weight;
+				}
+			}
+		}
+		
+		realZ=z;
+	}
+	
 	public void maskPlayers()
 	{
-		maskGreater(player,0);
+		if(player==null) return;
+		maskGreater(player,-1);
 	}
 	
 	public void maskPlayer(int id)
 	{
-		maskEqual(player,id+1);
+		if(player==null) return;
+		maskEqual(player,id);
 	}
 	
 	public void maskEqual(byte regions[], int region_id)
 	{
-		recompute_center=true;
+		recompute_center=false;
 		if(mask==null)mask=new boolean[Dwidth*Dheight];
 		int idx=0;
 		mask_top=Dheight-1;
@@ -209,7 +409,7 @@ public class DepthMap
 	
 	public void maskGreater(byte regions[], int region_id)
 	{
-		recompute_center=true;
+		recompute_center=false;
 		if(mask==null)mask=new boolean[Dwidth*Dheight];
 		int idx=0;
 		mask_top=Dheight-1;
@@ -252,9 +452,9 @@ public class DepthMap
 		return (realZ[idx]>=FLT_EPSILON && (mask==null || mask[idx]==true));
 	}
 	
-	public void computeXY()
+	/*public void computeXY()
 	{
-		computeXY((J4KSDK.NUI_CAMERA_DEPTH_NOMINAL_FOCAL_LENGTH_IN_PIXELS*Dwidth)/320);
+		computeXY((J4K1.NUI_CAMERA_DEPTH_NOMINAL_FOCAL_LENGTH_IN_PIXELS*Dwidth)/320);
 	}
 	
 	public void computeXY(final float focLen)
@@ -294,19 +494,19 @@ public class DepthMap
 		    }
 		 }
 		 recompute_center=false;
-	}
+	}*/
 	
-	public void setUV(int[] _U, int[] _V, int videoWidth, int videoHeight)
+	public void setUV(float[] UV)
 	{
-		int sz=_U.length;
+		if(UV==null) return;
+		int sz=UV.length/2;
 		if(U==null){U=new float[sz];}
 		if(V==null){V=new float[sz];}
-		float w=videoWidth;
-		float h=videoHeight;
+		int j=0;
 		for(int i=0;i<sz;i++)
 		{
-			U[i]=_U[i]/w;
-			V[i]=_V[i]/h;
+			U[i]=UV[j];j++;
+			V[i]=UV[j];j++;
 		}	
 	}
 	
@@ -338,7 +538,7 @@ public class DepthMap
 		int idx;
 		boolean draw_flag=true;
 		boolean is_region=true;
-		if(realX==null || realY==null) computeXY();
+		//if(realX==null || realY==null) computeXY();
 		
 		if(center==null) center=new float[3];
 		int center_counter=0;
@@ -347,9 +547,11 @@ public class DepthMap
 		gl.glMultMatrixd(transformation, 0);
 		int idx2;
 		gl.glBegin(GL2.GL_QUADS);
-	    for(int i=0;i<Dwidth-skip;i+=skip)
+		final int max_i=Dwidth-skip-(skip>1?0:1);
+		final int max_j=Dheight-skip-(skip>1?0:1);
+	    for(int i=1;i<max_i;i+=skip)
 	    {
-	    	for(int j=0;j<Dheight-skip;j+=skip)
+	    	for(int j=1;j<max_j;j+=skip)
 	    	{
 	    		idx=j*Dwidth+i;
 	    		//CHECK IF A VALID DEPTH WAS ESTIMATED IN THIS PIXEL
@@ -388,14 +590,17 @@ public class DepthMap
     				}
 	    			else
 	    			{
-	    				gl.glNormal3f((realZ[idx+Dwidth*skip]-realZ[idx])/1.0f,(realZ[idx+skip]-realZ[idx])/1.0f,0.005f);
 	        			idx2=idx;
-	    				gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
+	        			gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 	    				idx2=idx+skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 		    			gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 		    			idx2=idx+Dwidth*skip+skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 		    			gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 		    			idx2=idx+Dwidth*skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 		    			gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 	    			}
 	    		}
@@ -419,7 +624,7 @@ public class DepthMap
 		int idx;
 		boolean draw_flag=true;
 		boolean is_region=true;
-		if(realX==null || realY==null) computeXY();
+	//	if(realX==null || realY==null) computeXY();
 		
 		if(center==null) center=new float[3];
 		int center_counter=0;
@@ -551,7 +756,7 @@ public class DepthMap
 		int idx;
 		boolean draw_flag=true;
 		boolean is_region=true;
-		if(realX==null || realY==null) computeXY();
+//		if(realX==null || realY==null) computeXY();
 		
 		boolean ignoreUV=false;
 		if(U==null ||V==null) ignoreUV=true;
@@ -649,7 +854,7 @@ public class DepthMap
 		int idx;
 		boolean draw_flag=true;
 		boolean is_region=true;
-		if(realX==null || realY==null) computeXY();
+	//	if(realX==null || realY==null) computeXY();
 		
 		boolean ignoreUV=false;
 		if(U==null ||V==null) ignoreUV=true;
@@ -661,9 +866,11 @@ public class DepthMap
 		gl.glMultMatrixd(transformation, 0);
 		int idx2;
 		gl.glBegin(GL2.GL_QUADS);
-	    for(int i=0;i<Dwidth-skip;i+=skip)
+		final int max_i=Dwidth-skip-(skip>1?0:1);
+		final int max_j=Dheight-skip-(skip>1?0:1);
+	    for(int i=1;i<max_i;i+=skip)
 	    {
-	    	for(int j=0;j<Dheight-skip;j+=skip)
+	    	for(int j=1;j<max_j;j+=skip)
 	    	{
 	    		idx=j*Dwidth+i;
 	    		//CHECK IF A VALID DEPTH WAS ESTIMATED IN THIS PIXEL
@@ -702,17 +909,20 @@ public class DepthMap
     				}
 	    			else
 	    			{
-	    				gl.glNormal3f((realZ[idx+Dwidth*skip]-realZ[idx])/1.0f,(realZ[idx+skip]-realZ[idx])/1.0f,0.005f);
 	    				idx2=idx;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 	    				if(!ignoreUV) gl.glTexCoord2f(U[idx2], V[idx2]);
 	    				gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 	    				idx2=idx+skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 	    				if(!ignoreUV) gl.glTexCoord2f(U[idx2], V[idx2]);
 	    				gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 	    				idx2=idx+Dwidth*skip+skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 	    				if(!ignoreUV) gl.glTexCoord2f(U[idx2], V[idx2]);
 	    				gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);    		
 	    				idx2=idx+Dwidth*skip;
+	    				gl.glNormal3f((realZ[idx2+Dwidth*skip]-realZ[idx2-Dwidth*skip])/1.0f,(realZ[idx2+skip]-realZ[idx2-skip])/1.0f,0.005f);
 	    				if(!ignoreUV) gl.glTexCoord2f(U[idx2], V[idx2]);
 	    				gl.glVertex3f(realX[idx2], realY[idx2], -realZ[idx2]);
 	    			}
@@ -964,7 +1174,7 @@ public class DepthMap
 	
 	public static ShortBuffer fromRawDepthFile(File f, long id, int w, int h, boolean bigEndian)
 	{
-		byte[] b=new byte[2*w*h];
+		byte[] b=new byte[2*w*h+12];
 
 		ShortBuffer sb=null;
 		try {

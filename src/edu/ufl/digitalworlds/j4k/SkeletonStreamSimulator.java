@@ -1,9 +1,9 @@
 package edu.ufl.digitalworlds.j4k;
 
-import edu.ufl.digitalworlds.j4k.J4KSDK;
+import edu.ufl.digitalworlds.j4k.J4K1;
 
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -39,12 +39,12 @@ import edu.ufl.digitalworlds.j4k.J4KSDK;
 
 public class SkeletonStreamSimulator implements Runnable{
 
-private J4KSDK kinect;
+private J4K1 kinect;
 private int counter=10;
 private Thread thread;
 private boolean show_second_skeleton=false;
 
-public SkeletonStreamSimulator(J4KSDK kinect)
+public SkeletonStreamSimulator(J4K1 kinect)
 {
 	this.kinect=kinect;
 }
@@ -68,10 +68,10 @@ public void showTwoSkeletons(boolean flag)
 
 @Override
 public void run() {
-	float data[]=new float[J4KSDK.NUI_SKELETON_COUNT*J4KSDK.NUI_SKELETON_POSITION_COUNT*3];
-	boolean flags[]=new boolean[J4KSDK.NUI_SKELETON_COUNT];
+	float data[]=new float[J4K1.NUI_SKELETON_COUNT*J4K1.NUI_SKELETON_POSITION_COUNT*3];
+	boolean flags[]=new boolean[J4K1.NUI_SKELETON_COUNT];
 	flags[0]=true;
-	final int sz=J4KSDK.NUI_SKELETON_POSITION_COUNT*3;
+	final int sz=J4K1.NUI_SKELETON_POSITION_COUNT*3;
 	while(thread!=null)
 	{
 		double d[]=getSkeleton(counter);
@@ -97,7 +97,7 @@ public void run() {
 			flags[1]=false;
 		}
 		
-		if(kinect!=null)kinect.onSkeletonFrameEvent(data, flags);
+		if(kinect!=null)kinect.onSkeletonFrameEventFromNative(flags,data, null);
 		counter+=1;
 		if(counter>130)counter=10;
 		try {

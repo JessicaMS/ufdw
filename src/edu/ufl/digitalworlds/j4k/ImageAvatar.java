@@ -2,6 +2,7 @@ package edu.ufl.digitalworlds.j4k;
 
 import java.io.InputStream;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
@@ -9,7 +10,7 @@ import edu.ufl.digitalworlds.j4k.Avatar;
 import edu.ufl.digitalworlds.opengl.OpenGLTexture;
 
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -65,6 +66,7 @@ public class ImageAvatar extends Avatar
 		ratio=new float[10];
 		for(int i=0;i<10;i++)
 			textures[i]=new OpenGLTexture();
+		//load(folder);
 	}
 	
 	public void draw(GL2 gl, Skeleton sk)
@@ -186,9 +188,128 @@ public class ImageAvatar extends Avatar
 		return ratio[body_part];
 	}
 	
+	/*private void load(String foldername)
+	{
+		 InputStream is;
+			try {
+				is = ResourceRetriever.fromFile(foldername+"/avatar.xml");
+				load(is);
+				is.close();
+				
+		
+				is = ResourceRetriever.fromFile(foldername+"/avatar.xml");
+				if(is==null)return;
+				Document doc=null;
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder;
+				dBuilder = dbFactory.newDocumentBuilder();
+				doc = dBuilder.parse(is);	
+				if(doc==null)return;	
+				doc.getDocumentElement().normalize();
+				NodeList nList = doc.getElementsByTagName("AVATAR");
+
+				boolean done=false;
+				String s;
+				for (int temp = 0; temp < nList.getLength() && !done; temp++) 
+				{
+					  Node nNode = nList.item(temp);
+					  if (nNode.getNodeType() == Node.ELEMENT_NODE) 
+					  {
+					      Element eElement = (Element) nNode;
+					      
+					      //s=foldername+"/"+getTagValue("HEAD_TEXTURE", eElement);
+					      //textures[HEAD].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("TORSO_TEXTURE", eElement);
+					      textures[TORSO].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("LEFT_ARM_TEXTURE", eElement);
+					      textures[ARM_LEFT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("LEFT_FOREARM_TEXTURE", eElement);
+					      textures[FOREARM_LEFT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("RIGHT_ARM_TEXTURE", eElement);
+					      textures[ARM_RIGHT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("RIGHT_FOREARM_TEXTURE", eElement);
+					      textures[FOREARM_RIGHT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("LEFT_THIGH_TEXTURE", eElement);
+					      textures[THIGH_LEFT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("LEFT_LEG_TEXTURE", eElement);
+					      textures[LEG_LEFT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("RIGHT_THIGH_TEXTURE", eElement);
+					      textures[THIGH_RIGHT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      s=foldername+"/"+getTagValue("RIGHT_LEG_TEXTURE", eElement);
+					      textures[LEG_RIGHT].loadImage(ResourceRetriever.getResourceAsStream(s),true);
+					      
+					      //ratio[HEAD]=getFloat(getTagValue("HEAD_TEXTURE_ASPECT_RATIO", eElement));					      
+					      ratio[TORSO]=getFloat(getTagValue("TORSO_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[ARM_LEFT]=getFloat(getTagValue("LEFT_ARM_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[FOREARM_LEFT]=getFloat(getTagValue("LEFT_FOREARM_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[ARM_RIGHT]=getFloat(getTagValue("RIGHT_ARM_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[FOREARM_RIGHT]=getFloat(getTagValue("RIGHT_FOREARM_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[THIGH_LEFT]=getFloat(getTagValue("LEFT_THIGH_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[LEG_LEFT]=getFloat(getTagValue("LEFT_LEG_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[THIGH_RIGHT]=getFloat(getTagValue("RIGHT_THIGH_TEXTURE_ASPECT_RATIO", eElement));
+					      ratio[LEG_RIGHT]=getFloat(getTagValue("RIGHT_LEG_TEXTURE_ASPECT_RATIO", eElement));
+					      
+					      
+					      done=true;
+					  }
+				}
+				
+				
+				//for(int i=0;i<10;i++)
+				//{
+				//	is=new FileInputStream(new File("steps.png"));
+				//	textures[i].load(is, true);
+				//	is.close();
+				//}
+				is.close();
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			} catch (SAXException e) {
+				e.printStackTrace();
+			}
+			
+	}	*/
+	
 	public void delete()
 	{
 		for(int i=0;i<10;i++) textures[i].delete();
 	}
+	
+	/*private static float getFloat(String s)
+	{
+		float ret=0;
+		try{ret=Float.parseFloat(s);}
+		catch(NumberFormatException e){}
+		return ret;
+	}
+	
+	private static String getTagValue(String sTag, Element eElement) {
 		
+		NodeList nlList1 = eElement.getElementsByTagName(sTag);
+		if(nlList1==null) return "";
+		
+		if(nlList1.item(0)==null) return "";
+		
+		NodeList nlList = eElement.getElementsByTagName(sTag).item(0).getChildNodes();
+	 
+	        Node nValue = (Node) nlList.item(0);
+	 
+	        if(nValue==null) return "";
+	        else return nValue.getNodeValue();
+	  }	*/
+	
 }

@@ -1,11 +1,13 @@
 package edu.ufl.digitalworlds.j4k;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.PixelGrabber;
 import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL2;
 
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -94,6 +96,14 @@ public class VideoFrame {
 		new_data=true;
 	}
 	
+	public void update(BufferedImage img)
+	{
+		this.data=getTextureByteBuffer(true, img).array();
+		this.width=img.getWidth();
+		this.height=img.getHeight();
+		new_data=true;
+	}
+	
 	public void use(GL2 gl)
 	{
 		if(openGL_ID==-1)
@@ -112,4 +122,37 @@ public class VideoFrame {
 			}
 		}
 	}
+	
+	  private ByteBuffer getTextureByteBuffer ( boolean useAlphaChannel,BufferedImage img)
+	  {
+		  int[] packedPixels = new int[img.getWidth() * img.getHeight()];
+
+	      PixelGrabber pixelgrabber = new PixelGrabber(img, 0, 0, img.getWidth(), img.getHeight(), packedPixels, 0, img.getWidth());
+	      try {
+	          pixelgrabber.grabPixels();
+	      } catch (InterruptedException e) {
+	          throw new RuntimeException();
+	      }
+
+	      int bytesPerPixel = useAlphaChannel ? 4 : 3;
+	      //ByteBuffer unpackedPixels = BufferUtil.newByteBuffer(packedPixels.length * bytesPerPixel);
+	      ByteBuffer unpackedPixels=ByteBuffer.allocate(packedPixels.length * bytesPerPixel);
+	      
+	      for (int row = 0; row < img.getHeight(); row++) {
+	          for (int col = 0; col < img.getWidth(); col++) {
+	              int packedPixel = packedPixels[row * img.getWidth() + col];
+	              unpackedPixels.put((byte) ((packedPixel >> 16) & 0xFF));
+	              unpackedPixels.put((byte) ((packedPixel >> 8) & 0xFF));
+	              unpackedPixels.put((byte) ((packedPixel >> 0) & 0xFF));
+	              if (useAlphaChannel) {
+	                  unpackedPixels.put((byte) ((packedPixel >> 24) & 0xFF));
+	              }
+	          }
+	      }
+
+	      unpackedPixels.flip();
+
+	      return unpackedPixels;
+	  }
+
 }

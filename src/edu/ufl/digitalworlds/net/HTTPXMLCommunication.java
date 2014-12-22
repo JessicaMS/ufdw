@@ -1,7 +1,10 @@
 package edu.ufl.digitalworlds.net;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -9,6 +12,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
+import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -16,34 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-/*
- * Copyright 2011, Digital Worlds Institute, University of 
- * Florida, Angelos Barmpoutis.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *     * Redistributions of source code must retain this copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce this
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 public class HTTPXMLCommunication 
 {
@@ -229,6 +205,104 @@ public class HTTPXMLCommunication
 		HTTPXMLComEvent e;
 		if(error_id!=0)e=new HTTPXMLComEvent(error_id);
 		else e=new HTTPXMLComEvent(doc);
+		return e;
+	
+	}
+	
+	static public HTTPXMLComEvent sendFileRequest(String url_address, String keys[], String values[], BufferedImage upfile)
+	{
+		Document doc=null;
+		int error_id=11;
+		if(keys.length!=values.length || keys.length<1) 
+		{
+			error_id=10;
+		}
+		else try
+		{
+		error_id=1;
+		URL url = new URL(url_address);
+		error_id=2;
+		URLConnection conn =   url.openConnection();
+		conn.setUseCaches(false);
+		error_id=3;
+		conn.setDoOutput(true);
+		error_id=4;
+        
+        byte[] imgData = new byte[0];
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			ImageIO.write(upfile, "png", baos);
+			imgData=baos.toByteArray();
+		} catch (IOException e) { 
+		   e.printStackTrace();
+		}
+
+        String CrLf = "\r\n";
+        String message1 = "";
+        
+        for(int i=0;i<keys.length-1;i++)
+	    {
+        	message1 +="-----------------------------4664151417711" + CrLf;
+        	message1 += "Content-Disposition: form-data; name=\""+keys[i]+"\""
+                + CrLf+CrLf;
+        	message1 += values[i] + CrLf;
+	    }
+        
+        message1 +="-----------------------------4664151417711" + CrLf;
+        message1 += "Content-Disposition: form-data; name=\""+keys[keys.length-1]+"\"; filename=\""+values[values.length-1]+"\""
+                + CrLf;
+        message1 += "Content-Type: image/png" + CrLf;
+        message1 += CrLf;
+
+        // the image is sent between the messages in the multipart message.
+
+        String message2 = "";
+        message2 += CrLf + "-----------------------------4664151417711--"
+                + CrLf;
+
+        conn.setRequestProperty("Content-Type",
+                "multipart/form-data; boundary=---------------------------4664151417711");
+        // might not need to specify the content-length when sending chunked
+        // data.
+        conn.setRequestProperty("Content-Length", String.valueOf((message1
+                .length() + message2.length() + imgData.length)));
+
+        error_id=5;
+        OutputStream os = conn.getOutputStream();
+        os.write(message1.getBytes());
+        error_id=10;
+        // SEND THE IMAGE
+        int index = 0;
+        int size = 1024;
+        do {
+            if ((index + size) > imgData.length) {
+                size = imgData.length - index;
+            }
+            os.write(imgData, index, size);
+            index += size;
+        } while (index < imgData.length);
+        os.write(message2.getBytes());
+        
+        //ImageIO.write(upfile, "png", os);
+        
+        os.flush();
+					
+        error_id=6;
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        error_id=7;
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        error_id=8;
+        doc = dBuilder.parse(conn.getInputStream());
+        error_id=9;
+        doc.getDocumentElement().normalize();
+		error_id=0;
+		}
+		catch(Exception e){}
+		HTTPXMLComEvent e;
+		if(error_id!=0)e=new HTTPXMLComEvent(error_id);
+		else e=new HTTPXMLComEvent(doc);
+		//System.out.println(error_id);
+		//System.out.println(doc.getTextContent());
 		return e;
 	
 	}

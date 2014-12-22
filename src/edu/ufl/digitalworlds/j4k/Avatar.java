@@ -1,15 +1,28 @@
 package edu.ufl.digitalworlds.j4k;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.lang.Float;
 
 import javax.media.opengl.GL2;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import edu.ufl.digitalworlds.math.Geom;
 import edu.ufl.digitalworlds.math.FloatFilter;
 import edu.ufl.digitalworlds.math.VectorFilter;
 
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -166,7 +179,7 @@ public abstract class Avatar{
 		  //if(!perform_datafit) return;
 		  
 		  double v[]=new double[4];
-		  double p[]=sk.get3DJoint(Skeleton.SHOULDER_CENTER);
+		  double p[]=sk.get3DJoint(Skeleton.NECK);
 		  v[0]=-p[0];v[1]=p[1];v[2]=-p[2];v[3]=1;
 		  if(perform_datafit)setTorsoPoint(Avatar.SHOULDER_CENTER,Geom.transform4(inv_mat,v),true);
 		  p=sk.get3DJoint(Skeleton.SHOULDER_LEFT);
@@ -175,7 +188,7 @@ public abstract class Avatar{
 		  p=sk.get3DJoint(Skeleton.SHOULDER_RIGHT);
 		  v[0]=-p[0];v[1]=p[1];v[2]=-p[2];v[3]=1;
 		  if(perform_datafit)setTorsoPoint(Avatar.SHOULDER_RIGHT,Geom.transform4(inv_mat,v),true);
-		  p=sk.get3DJoint(Skeleton.HIP_CENTER);
+		  p=sk.get3DJoint(Skeleton.SPINE_BASE);
 		  v[0]=-p[0];v[1]=p[1];v[2]=-p[2];v[3]=1;
 		  if(perform_datafit)setTorsoPoint(Avatar.HIP_CENTER,Geom.transform4(inv_mat,v),true);
 		  p=sk.get3DJoint(Skeleton.HIP_LEFT);
@@ -239,9 +252,9 @@ public abstract class Avatar{
 		for(int i=4;i<sz;i+=3) if(p[i]<min_y){min_y=p[i];min_y_indx=i;}
 		
 		v=Geom.transform4(mat, torsoPoint[SHOULDER_CENTER].vector());
-		pos[Skeleton.SHOULDER_CENTER*3+0]=-(float)v[0];
-		pos[Skeleton.SHOULDER_CENTER*3+1]=(float)v[1];
-		pos[Skeleton.SHOULDER_CENTER*3+2]=-(float)v[2];
+		pos[Skeleton.NECK*3+0]=-(float)v[0];
+		pos[Skeleton.NECK*3+1]=(float)v[1];
+		pos[Skeleton.NECK*3+2]=-(float)v[2];
 		
 		v=Geom.transform4(mat, torsoPoint[SHOULDER_LEFT].vector());
 		pos[Skeleton.SHOULDER_LEFT*3+0]=-(float)v[0];
@@ -254,9 +267,9 @@ public abstract class Avatar{
 		pos[Skeleton.SHOULDER_RIGHT*3+2]=-(float)v[2];
 		
 		v=Geom.transform4(mat, torsoPoint[HIP_CENTER].vector());
-		pos[Skeleton.HIP_CENTER*3+0]=-(float)v[0];
-		pos[Skeleton.HIP_CENTER*3+1]=(float)v[1];
-		pos[Skeleton.HIP_CENTER*3+2]=-(float)v[2];
+		pos[Skeleton.SPINE_BASE*3+0]=-(float)v[0];
+		pos[Skeleton.SPINE_BASE*3+1]=(float)v[1];
+		pos[Skeleton.SPINE_BASE*3+2]=-(float)v[2];
 		
 		v=Geom.transform4(mat, torsoPoint[HIP_LEFT].vector());
 		pos[Skeleton.HIP_LEFT*3+0]=-(float)v[0];
@@ -325,12 +338,12 @@ public abstract class Avatar{
 		pos[Skeleton.WRIST_LEFT*3+2]=(float)(pos[Skeleton.ELBOW_LEFT*3+2]+p1[2]*length[FOREARM_LEFT].value());
 		
 		
-		p1=my_skeleton.get3DJoint(Skeleton.SHOULDER_CENTER);
+		p1=my_skeleton.get3DJoint(Skeleton.NECK);
 		p2=my_skeleton.get3DJoint(Skeleton.HEAD);
 		p1=Geom.normalize(Geom.minus(p2, p1));
-		pos[Skeleton.HEAD*3+0]=(float)(pos[Skeleton.SHOULDER_CENTER*3+0]+p1[0]*length[HEAD].value());
-		pos[Skeleton.HEAD*3+1]=(float)(pos[Skeleton.SHOULDER_CENTER*3+1]+p1[1]*length[HEAD].value());
-		pos[Skeleton.HEAD*3+2]=(float)(pos[Skeleton.SHOULDER_CENTER*3+2]+p1[2]*length[HEAD].value());
+		pos[Skeleton.HEAD*3+0]=(float)(pos[Skeleton.NECK*3+0]+p1[0]*length[HEAD].value());
+		pos[Skeleton.HEAD*3+1]=(float)(pos[Skeleton.NECK*3+1]+p1[1]*length[HEAD].value());
+		pos[Skeleton.HEAD*3+2]=(float)(pos[Skeleton.NECK*3+2]+p1[2]*length[HEAD].value());
 		
 		float dy=min_y-pos[min_y_indx];
 		

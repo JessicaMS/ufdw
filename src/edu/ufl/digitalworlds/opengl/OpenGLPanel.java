@@ -11,40 +11,16 @@ import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLJPanel;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JPanel;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
-/*
- * Copyright 2011, Digital Worlds Institute, University of 
- * Florida, Angelos Barmpoutis.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *     * Redistributions of source code must retain this copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce this
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+
 
 @SuppressWarnings("serial")
 public abstract class OpenGLPanel extends JPanel implements GLEventListener, MouseListener, MouseMotionListener, KeyListener {
@@ -57,12 +33,29 @@ public abstract class OpenGLPanel extends JPanel implements GLEventListener, Mou
 		
     setLayout(new BorderLayout());
     
+    //GLProfile glprofile = GLProfile.getDefault();
+    //GLCapabilities glcapabilities = new GLCapabilities( glprofile );
+    //GLJPanel gl2_area = new GLJPanel( glcapabilities );
     gl2_area=new GLCanvas();
     
 
     gl2_area.addGLEventListener(this);
     add(gl2_area);
+    //setSize(300, 300);
     animator = new FPSAnimator(gl2_area,25,false);
+    /*addWindowListener(new WindowAdapter() {
+        public void windowClosing(WindowEvent e) {
+          // Run this on another thread than the AWT event queue to
+          // make sure the call to Animator.stop() completes before
+          // exiting
+          new Thread(new Runnable() {
+              public void run() {
+                animator.stop();
+                System.exit(0);
+              }
+            }).start();
+        }
+      });*/
     animator.start();
   }
 
@@ -84,12 +77,15 @@ public abstract class OpenGLPanel extends JPanel implements GLEventListener, Mou
     
   @Override
   public void init(GLAutoDrawable drawable) {
+    // Use debug pipeline
+    // drawable.setGL(new DebugGL(drawable.getGL()));
 
 
 	drawable_=drawable;
     GL2 gl = drawable.getGL().getGL2();
     gl2_=gl;
     
+    //System.err.println("INIT GL IS: " + gl.getClass().getName());
 
     gl.setSwapInterval(1);
     gl.glEnable(GL2.GL_DEPTH_TEST);

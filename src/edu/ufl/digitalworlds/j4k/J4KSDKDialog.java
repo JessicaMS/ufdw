@@ -1,5 +1,6 @@
 package edu.ufl.digitalworlds.j4k;
 
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -24,9 +25,8 @@ import javax.swing.event.ChangeListener;
 
 import edu.ufl.digitalworlds.gui.DWApp;
 import edu.ufl.digitalworlds.opengl.OpenGLPanel;
-
 /*
- * Copyright 2011, Digital Worlds Institute, University of 
+ * Copyright 2011-2014, Digital Worlds Institute, University of 
  * Florida, Angelos Barmpoutis.
  * All rights reserved.
  *
@@ -63,17 +63,11 @@ import edu.ufl.digitalworlds.opengl.OpenGLPanel;
 @SuppressWarnings("serial")
 class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 {
-	JSlider elevation_angle;
-	JCheckBox near_mode;
-	JCheckBox seated_skeleton;
-	JCheckBox track_skeleton;
-	JButton turn_off;
-	JComboBox depth_resolution;
-	JComboBox video_resolution;
+	JLabel depth_resolution;
+	JLabel video_resolution;
 	JCheckBox show_video; 
-	JLabel acc_X;
-	JLabel acc_Y;
-	JLabel acc_Z;
+	JLabel device_type;
+	
 	
 	DepthAndVideoView main_panel;
 	
@@ -82,41 +76,16 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	 J4KSDKDialog(J4KSDK myKinect, boolean modal)
 	 {
 		 mK=myKinect;
+		 	
+		 if(myKinect.getDeviceType()==J4KSDK.MICROSOFT_KINECT_1)
+		 	device_type=new JLabel("Microsoft Kinect 1");
+		 else if(myKinect.getDeviceType()==J4KSDK.MICROSOFT_KINECT_2)
+			 device_type=new JLabel("Microsoft Kinect 2");
 		 
-		 near_mode=new JCheckBox("Near mode");
-			near_mode.addActionListener(this);
+		depth_resolution=new JLabel(myKinect.getDepthWidth()+"x"+myKinect.getDepthHeight());
+		video_resolution=new JLabel(myKinect.getColorWidth()+"x"+myKinect.getColorHeight());
 			
-			seated_skeleton=new JCheckBox("Seated skeleton");
-			seated_skeleton.addActionListener(this);
-			
-			elevation_angle=new JSlider();
-			elevation_angle.setMinimum(-27);
-			elevation_angle.setMaximum(27);
-			elevation_angle.setValue((int)myKinect.getElevationAngle());
-			elevation_angle.setToolTipText("Elevation Angle ("+elevation_angle.getValue()+" degrees)");
-			elevation_angle.addChangeListener(this);
-			
-			turn_off=new JButton("Turn off");
-			turn_off.addActionListener(this);
-			
-			depth_resolution=new JComboBox();
-			depth_resolution.addItem("80x60");
-			depth_resolution.addItem("320x240");
-			depth_resolution.addItem("640x480");
-			depth_resolution.setSelectedIndex(1);
-			depth_resolution.addActionListener(this);
-			
-			video_resolution=new JComboBox();
-			video_resolution.addItem("640x480");
-			video_resolution.addItem("1280x960");
-			video_resolution.setSelectedIndex(0);
-			video_resolution.addActionListener(this);
-			
-			track_skeleton=new JCheckBox("Track Skeletons");
-			track_skeleton.setSelected(true);
-			track_skeleton.addActionListener(this);
-			
-			show_video=new JCheckBox("Show video");
+			show_video=new JCheckBox("Show texture");
 			show_video.setSelected(true);
 			show_video.addActionListener(this);
 			
@@ -137,7 +106,7 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	     
 	     JPanel tmp=new JPanel(new BorderLayout());
 	     tmp.add(new KinectView(myKinect),BorderLayout.CENTER);
-	     tmp.add(new JLabel("Video view"),BorderLayout.NORTH);
+	     tmp.add(new JLabel("Color view"),BorderLayout.NORTH);
 	     p__.add(tmp);
 	     
 	     tmp=new JPanel(new BorderLayout());
@@ -157,34 +126,18 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	     p__.add(p_,BorderLayout.CENTER);
 	     
 	     p_=new JPanel(new GridBagLayout());
-	     DWApp.addToGridBag(p_, new JLabel("Depth Stream:"), 0, 0, 1, 1, 1.0, 1.0);
-	     DWApp.addToGridBag(p_, depth_resolution, 0, 1, 1, 1, 1.0, 1.0);
-	     DWApp.addToGridBag(p_, near_mode, 0, 2, 1, 1, 1.0, 1.0);
+	     DWApp.addToGridBag(p_, device_type, 0, 0, 1, 1, 1.0, 1.0);
+	     DWApp.addToGridBag(p_, new JLabel("Depth Stream:"), 0, 1, 1, 1, 1.0, 1.0);
+	     DWApp.addToGridBag(p_, depth_resolution, 0, 2, 1, 1, 1.0, 1.0);
 	     
-	     
-	     DWApp.addToGridBag(p_, new JLabel("Video Stream:"), 0, 3, 1, 1, 1.0, 1.0);
+	     DWApp.addToGridBag(p_, new JLabel("Color Stream:"), 0, 3, 1, 1, 1.0, 1.0);
 	     DWApp.addToGridBag(p_, video_resolution, 0, 4, 1, 1, 1.0, 1.0);
 	     DWApp.addToGridBag(p_, show_video, 0, 5, 1, 1, 1.0, 1.0);
 	     
 	     
-	     DWApp.addToGridBag(p_, new JLabel("Skeleton Stream:"), 0, 6, 1, 1, 1.0, 1.0);
-	     DWApp.addToGridBag(p_, track_skeleton, 0, 7, 1, 1, 1.0, 1.0);
-	     DWApp.addToGridBag(p_, seated_skeleton, 0, 8, 1, 1, 1.0, 1.0);
 	     
 	     
-	     DWApp.addToGridBag(p_, new JLabel("Elevation Angle:"), 0, 9, 1, 1, 1.0, 1.0);
-	     DWApp.addToGridBag(p_, elevation_angle, 0, 10, 1, 1, 1.0, 1.0);
 	     
-	     DWApp.addToGridBag(p_, new JLabel("Accelerometer:"), 0, 11, 1, 1, 1.0, 1.0);
-	     JPanel acc=new JPanel(new GridLayout(0,3));
-	     acc_X=new JLabel("0,");
-	     acc_Y=new JLabel("0,");
-	     acc_Z=new JLabel("0");
-	     acc.add(acc_X);
-	     acc.add(acc_Y);
-	     acc.add(acc_Z);
-	     DWApp.addToGridBag(p_, acc, 0, 12, 1, 1, 1.0, 1.0);
-	     	       
 	     tmp=new JPanel(new BorderLayout());
 	     tmp.add(p_,BorderLayout.CENTER);
 	     p_=tmp;
@@ -192,7 +145,6 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	     tmp=new JPanel(new BorderLayout());
 	     tmp.add(new JScrollPane(p_),BorderLayout.NORTH);
 	     
-	     tmp.add(turn_off,BorderLayout.SOUTH);
 	     
 	     p__.add(tmp,BorderLayout.EAST);
 	     
@@ -222,9 +174,9 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	 	 
 	 	 public void draw()
 	 	 {
-	 		 byte[] data=myKinect.getVideoData();
+	 		 byte[] data=myKinect.getColorFrame();
 	 		 if(data==null) return;
-	 		 videoTexture.update(myKinect.videoWidth(), myKinect.videoHeight(), data);
+	 		 videoTexture.update(myKinect.getColorWidth(), myKinect.getColorHeight(), data);
 	 		 pushMatrix();
 	 	      translate(0,0,-3.5);
 	 	      rotateZ(180);
@@ -255,7 +207,7 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
     	      gl.glLineWidth(2.0f);
 	 		 Skeleton sk[]=myKinect.getSkeletons();
 	 		 if(sk==null) return;
-	 		 for(int skeleton_id=0;skeleton_id<J4KSDK.NUI_SKELETON_COUNT;skeleton_id++)
+	 		 for(int skeleton_id=0;skeleton_id<6;skeleton_id++)
 	 			 if(sk[skeleton_id]!=null)sk[skeleton_id].draw(gl);
 	 	 }
 	 }
@@ -321,13 +273,10 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	 		    rotate(view_rotz, 0.0, 0.0, 1.0);
 	 		    translate(0,0,2);        
 	 		    
-	 		    float a[]=myKinect.getAccelerometerReading();
-	 		    acc_X.setText(""+(int)(a[0]*100)/100f+",");
-	 		    acc_Y.setText(""+(int)(a[1]*100)/100f+",");
-	 		    acc_Z.setText(""+(int)(a[2]*100)/100f);
-	 		    short[] depth_data=myKinect.getDepthPacked();
-	 		    if(depth_data!=null)depth_map=new DepthMap(myKinect.depthWidth(), myKinect.depthHeight(),depth_data);
-	 		    	 		    	 
+	 		    float[] xyz_data=myKinect.getXYZ();
+	 		    if(xyz_data!=null)depth_map=new DepthMap(myKinect.getDepthWidth(),myKinect.getDepthHeight(),xyz_data);
+	 		    
+	 		    if(depth_map!=null)
 	 		    	if(draw_depth)
 	 		    	{
 	 		    		gl.glEnable(GL2.GL_LIGHTING);
@@ -337,14 +286,14 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	 		    	}
 	 		    	else
 	 		    	{
-	 		 		    byte[] video_data=myKinect.getVideoData();
-	 		 		    if(video_data!=null)videoTexture.update(myKinect.videoWidth(), myKinect.videoHeight(), video_data);
+	 		 		    byte[] video_data=myKinect.getColorFrame();
+	 		 		    if(video_data!=null)videoTexture.update(myKinect.getColorWidth(), myKinect.getColorHeight(), video_data);
 
 	 		    		gl.glDisable(GL2.GL_LIGHTING);
 	 		    		gl.glEnable(GL2.GL_TEXTURE_2D);
 	 		    		gl.glColor3f(1f,1f,1f);
 	 		    		videoTexture.use(gl);
-	 		    		depth_map.setUV(myKinect.getU(), myKinect.getV(), myKinect.videoWidth(), myKinect.videoHeight());
+	 		    		depth_map.setUV(myKinect.getUV());
 	 		    		depth_map.drawTexture(gl);
 	 		    		gl.glDisable(GL2.GL_TEXTURE_2D);
 	 		    	
@@ -383,71 +332,10 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 	 	}
 	 }
 
-	 private void resetKinect()
-		{
-			if(turn_off.getText().compareTo("Turn on")==0) return;
-			
-			mK.stop();
-			int depth_res=J4KSDK.NUI_IMAGE_RESOLUTION_INVALID;
-			if(depth_resolution.getSelectedIndex()==0) depth_res=J4KSDK.NUI_IMAGE_RESOLUTION_80x60;
-			else if(depth_resolution.getSelectedIndex()==1) depth_res=J4KSDK.NUI_IMAGE_RESOLUTION_320x240;
-			else if(depth_resolution.getSelectedIndex()==2) depth_res=J4KSDK.NUI_IMAGE_RESOLUTION_640x480;
-			
-			int video_res=J4KSDK.NUI_IMAGE_RESOLUTION_INVALID;
-			if(video_resolution.getSelectedIndex()==0) video_res=J4KSDK.NUI_IMAGE_RESOLUTION_640x480;
-			else if(video_resolution.getSelectedIndex()==1) video_res=J4KSDK.NUI_IMAGE_RESOLUTION_1280x960;
-			
-			
-			mK.start(track_skeleton.isSelected(),depth_res,video_res);
-			mK.computeUV(true);
-			if(seated_skeleton.isSelected())mK.startSkeletonTracking(true);
-			if(near_mode.isSelected()) mK.setNearMode(true);
-		}
 	 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource()==near_mode)
-		{
-			if(near_mode.isSelected()) mK.setNearMode(true);
-			else mK.setNearMode(false);
-		}
-		else if(e.getSource()==seated_skeleton)
-		{
-			if(seated_skeleton.isSelected()) mK.startSkeletonTracking(true);
-			else mK.startSkeletonTracking(false);
-		}
-		else if(e.getSource()==track_skeleton)
-		{
-			if(track_skeleton.isSelected())
-			{
-				if(seated_skeleton.isSelected()) mK.startSkeletonTracking(true);
-				else mK.startSkeletonTracking(false);
-			}
-			else mK.stopSkeletonTracking();
-		}
-		else if(e.getSource()==turn_off)
-		{
-			
-			if(turn_off.getText().compareTo("Turn off")==0)
-			{
-				mK.stop();
-				turn_off.setText("Turn on");
-			}
-			else
-			{
-				turn_off.setText("Turn off");
-				resetKinect();
-			}
-		}
-		else if(e.getSource()==depth_resolution)
-		{
-			resetKinect();
-		}
-		else if(e.getSource()==video_resolution)
-		{
-			resetKinect();
-		}
-		else if(e.getSource()==show_video)
+		if(e.getSource()==show_video)
 		{
 			main_panel.draw_depth=!show_video.isSelected();
 		}
@@ -456,14 +344,6 @@ class J4KSDKDialog extends JDialog implements ActionListener, ChangeListener
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		if(e.getSource()==elevation_angle)
-		{
-			if(!elevation_angle.getValueIsAdjusting())
-			{
-				mK.setElevationAngle(elevation_angle.getValue());
-				elevation_angle.setToolTipText("Elevation Angle ("+elevation_angle.getValue()+" degrees)");
-			}
-		}
 		
 	}
 }
