@@ -135,7 +135,7 @@ public class DepthMap
 			if(index.length!=realZ.length) return;
 			player=index;
 		}
-		else
+		else if(packed_data!=null)
 		{
 			if(packed_data.length!=realZ.length)return;
 			int sz=Dwidth*Dheight;
