@@ -5,8 +5,8 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL;
 import javax.swing.JFileChooser;
 
 import edu.ufl.digitalworlds.opengl.OpenGLPanel;

@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
 

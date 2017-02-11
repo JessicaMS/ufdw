@@ -12,7 +12,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
+
+
 import javax.swing.JFileChooser;
 
 import edu.ufl.digitalworlds.files.FileUtils;
@@ -246,6 +248,11 @@ public class OpenGLImageComposition
 	private boolean first_draw_after_cgi_loaded=false;
 	private boolean please_make_list=false;
 	private ProgressListener progress=null;
+	
+	public void test() {
+		OpenGLTexture hello = new OpenGLTexture();
+		hello.use(gl_);
+	}
 	
 	public OpenGLImageComposition()
 	{

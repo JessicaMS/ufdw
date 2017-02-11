@@ -597,21 +597,6 @@ public abstract class DWApp extends JPanel implements ItemListener, ActionListen
     public void stop() {GUIclosing();System.exit(0);}
 
 
-    /*static void addToGridBag(JPanel panel, Component comp,
-            int x, int y, int w, int h, double weightx, double weighty) {
-
-        GridBagLayout gbl = (GridBagLayout) panel.getLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
-        c.gridx = x;
-        c.gridy = y;
-        c.gridwidth = w;
-        c.gridheight = h;
-        c.weightx = weightx;
-        c.weighty = weighty;
-        panel.add(comp);
-        gbl.setConstraints(comp, c);
-    }*/
     
     public static String FormatDecimal(String in,int decimals)
     {

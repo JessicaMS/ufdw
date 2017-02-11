@@ -4,7 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.nio.ByteBuffer;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 /*
  * Copyright 2011-2014, Digital Worlds Institute, University of 

@@ -2,8 +2,8 @@ package edu.ufl.digitalworlds.j4k;
 
 import java.io.InputStream;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
 import edu.ufl.digitalworlds.j4k.Avatar;
