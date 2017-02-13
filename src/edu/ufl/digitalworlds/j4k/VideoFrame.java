@@ -41,7 +41,7 @@ import com.jogamp.opengl.GL2;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class VideoFrame {
+public class VideoFrame implements Cloneable {
 
 	public byte[] data;
 	private int openGL_ID;
@@ -154,5 +154,14 @@ public class VideoFrame {
 
 	      return unpackedPixels;
 	  }
+	  
+	  @Override
+	  public VideoFrame clone() throws CloneNotSupportedException {
+
+		    VideoFrame clone=(VideoFrame)super.clone();
+
+		    return clone;
+
+		  }
 
 }
