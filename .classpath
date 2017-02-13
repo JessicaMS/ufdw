@@ -16,5 +16,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/KinectTools/jar/ufdw-jogamp2.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
